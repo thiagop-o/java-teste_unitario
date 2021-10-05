@@ -1,0 +1,210 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LocacaoService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/highlight-idea.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">servicos</a>
+</div>
+
+<h1>Coverage Summary for Class: LocacaoService (servicos)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocacaoService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    97.6%
+  </span>
+  <span class="absValue">
+    (41/42)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<div class="sourceCode" id="sourceCode"><i class="no-highlight">1</i>&nbsp;package servicos;
+<i class="no-highlight">2</i>&nbsp;
+<i class="no-highlight">3</i>&nbsp;import dao.LocacaoDAO;
+<i class="no-highlight">4</i>&nbsp;import entidades.Filme;
+<i class="no-highlight">5</i>&nbsp;import entidades.Locacao;
+<i class="no-highlight">6</i>&nbsp;import entidades.Usuario;
+<i class="no-highlight">7</i>&nbsp;import exceptions.FilmeSemEstoqueException;
+<i class="no-highlight">8</i>&nbsp;import exceptions.LocadoraException;
+<i class="no-highlight">9</i>&nbsp;import utils.DataUtils;
+<i class="no-highlight">10</i>&nbsp;
+<i class="no-highlight">11</i>&nbsp;import java.util.Calendar;
+<i class="no-highlight">12</i>&nbsp;import java.util.Date;
+<i class="no-highlight">13</i>&nbsp;import java.util.List;
+<i class="no-highlight">14</i>&nbsp;
+<i class="no-highlight">15</i>&nbsp;import static utils.DataUtils.adicionarDias;
+<i class="no-highlight">16</i>&nbsp;
+<b class="fc"><i class="no-highlight">17</i>&nbsp;public class LocacaoService {</b>
+<i class="no-highlight">18</i>&nbsp;	LocacaoDAO dao;
+<i class="no-highlight">19</i>&nbsp;	SPCService spcService;
+<i class="no-highlight">20</i>&nbsp;	EmailService emailService;
+<i class="no-highlight">21</i>&nbsp;	
+<i class="no-highlight">22</i>&nbsp;	public Locacao alugarFilme(Usuario usuario, List&lt;Filme&gt; filmes) throws Exception {
+<i class="no-highlight">23</i>&nbsp;
+<i class="no-highlight">24</i>&nbsp;
+<b class="fc"><i class="no-highlight">25</i>&nbsp;		if(usuario == null) {</b>
+<b class="fc"><i class="no-highlight">26</i>&nbsp;			throw new LocadoraException(&quot;Usuario vazio&quot;);</b>
+<i class="no-highlight">27</i>&nbsp;		}
+<i class="no-highlight">28</i>&nbsp;
+<b class="fc"><i class="no-highlight">29</i>&nbsp;		if(filmes == null || filmes.isEmpty()) {</b>
+<b class="fc"><i class="no-highlight">30</i>&nbsp;			throw new LocadoraException(&quot;Filme vazio&quot;);</b>
+<i class="no-highlight">31</i>&nbsp;		}
+<i class="no-highlight">32</i>&nbsp;
+<b class="fc"><i class="no-highlight">33</i>&nbsp;		for(Filme filme: filmes) {</b>
+<b class="fc"><i class="no-highlight">34</i>&nbsp;			if(filme.getEstoque() == 0) {</b>
+<b class="fc"><i class="no-highlight">35</i>&nbsp;				throw new FilmeSemEstoqueException();</b>
+<i class="no-highlight">36</i>&nbsp;			}
+<b class="fc"><i class="no-highlight">37</i>&nbsp;		}</b>
+<i class="no-highlight">38</i>&nbsp;
+<i class="no-highlight">39</i>&nbsp;		boolean negativado;
+<i class="no-highlight">40</i>&nbsp;
+<i class="no-highlight">41</i>&nbsp;		try {
+<b class="fc"><i class="no-highlight">42</i>&nbsp;			negativado = spcService.possuiNegaticação(usuario);</b>
+<b class="fc"><i class="no-highlight">43</i>&nbsp;		}catch (Exception ex){</b>
+<b class="fc"><i class="no-highlight">44</i>&nbsp;			throw new LocadoraException(&quot;SPC fora do ar, tente novamente&quot;);</b>
+<b class="fc"><i class="no-highlight">45</i>&nbsp;		}</b>
+<i class="no-highlight">46</i>&nbsp;
+<b class="fc"><i class="no-highlight">47</i>&nbsp;		if (negativado){</b>
+<b class="fc"><i class="no-highlight">48</i>&nbsp;			throw new LocadoraException(&quot;Usuario Negativado&quot;);</b>
+<i class="no-highlight">49</i>&nbsp;		}
+<i class="no-highlight">50</i>&nbsp;
+<i class="no-highlight">51</i>&nbsp;
+<b class="fc"><i class="no-highlight">52</i>&nbsp;		Locacao locacao = new Locacao();</b>
+<b class="fc"><i class="no-highlight">53</i>&nbsp;		locacao.setFilmes(filmes);</b>
+<b class="fc"><i class="no-highlight">54</i>&nbsp;		locacao.setUsuario(usuario);</b>
+<b class="fc"><i class="no-highlight">55</i>&nbsp;		locacao.setDataLocacao(new Date());</b>
+<b class="fc"><i class="no-highlight">56</i>&nbsp;		Double valorTotal = 0d;</b>
+<b class="fc"><i class="no-highlight">57</i>&nbsp;		for(int i = 0; i &lt; filmes.size(); i++) {</b>
+<b class="fc"><i class="no-highlight">58</i>&nbsp;			Filme filme = filmes.get(i);</b>
+<b class="fc"><i class="no-highlight">59</i>&nbsp;			Double valorFilme = filme.getPrecoLocacao();</b>
+<b class="fc"><i class="no-highlight">60</i>&nbsp;			switch (i) {</b>
+<b class="fc"><i class="no-highlight">61</i>&nbsp;				case 2: valorFilme = valorFilme * 0.75; break;</b>
+<b class="fc"><i class="no-highlight">62</i>&nbsp;				case 3: valorFilme = valorFilme * 0.5; break;</b>
+<b class="fc"><i class="no-highlight">63</i>&nbsp;				case 4: valorFilme = valorFilme * 0.25; break;</b>
+<b class="fc"><i class="no-highlight">64</i>&nbsp;				case 5: valorFilme = 0d; break;</b>
+<i class="no-highlight">65</i>&nbsp;			}
+<b class="fc"><i class="no-highlight">66</i>&nbsp;			valorTotal += valorFilme;</b>
+<i class="no-highlight">67</i>&nbsp;		}
+<b class="fc"><i class="no-highlight">68</i>&nbsp;		locacao.setValor(valorTotal);</b>
+<i class="no-highlight">69</i>&nbsp;
+<i class="no-highlight">70</i>&nbsp;		//Entrega no dia seguinte
+<b class="fc"><i class="no-highlight">71</i>&nbsp;		Date dataEntrega = new Date();</b>
+<b class="fc"><i class="no-highlight">72</i>&nbsp;		dataEntrega = adicionarDias(dataEntrega, 1);</b>
+<b class="fc"><i class="no-highlight">73</i>&nbsp;		if(DataUtils.verificarDiaSemana(dataEntrega, Calendar.SUNDAY)){</b>
+<b class="nc"><i class="no-highlight">74</i>&nbsp;			dataEntrega = adicionarDias(dataEntrega,1);</b>
+<i class="no-highlight">75</i>&nbsp;		}
+<b class="fc"><i class="no-highlight">76</i>&nbsp;		locacao.setDataRetorno(dataEntrega);</b>
+<i class="no-highlight">77</i>&nbsp;
+<i class="no-highlight">78</i>&nbsp;		//Salvando a locacao...	
+<b class="fc"><i class="no-highlight">79</i>&nbsp;		dao.salvar(locacao);</b>
+<i class="no-highlight">80</i>&nbsp;
+<b class="fc"><i class="no-highlight">81</i>&nbsp;		return locacao;</b>
+<i class="no-highlight">82</i>&nbsp;	}
+<i class="no-highlight">83</i>&nbsp;
+<i class="no-highlight">84</i>&nbsp;	public void notificarAtrasos(){
+<b class="fc"><i class="no-highlight">85</i>&nbsp;		List&lt;Locacao&gt; locacoes = dao.obterLocacoesPendentes();</b>
+<b class="fc"><i class="no-highlight">86</i>&nbsp;		for(Locacao locacao: locacoes){</b>
+<b class="fc"><i class="no-highlight">87</i>&nbsp;			if(locacao.getDataRetorno().before(new Date())) {</b>
+<b class="fc"><i class="no-highlight">88</i>&nbsp;				emailService.notificarAtraso(locacao.getUsuario());</b>
+<i class="no-highlight">89</i>&nbsp;			}
+<b class="fc"><i class="no-highlight">90</i>&nbsp;		}</b>
+<i class="no-highlight">91</i>&nbsp;	}
+<i class="no-highlight">92</i>&nbsp;
+<i class="no-highlight">93</i>&nbsp;	/*public void setLocacaoDAO(LocacaoDAO dao){
+<i class="no-highlight">94</i>&nbsp;		this.dao = dao;
+<i class="no-highlight">95</i>&nbsp;	}
+<i class="no-highlight">96</i>&nbsp;
+<i class="no-highlight">97</i>&nbsp;	public void setSpcService(SPCService spc){
+<i class="no-highlight">98</i>&nbsp;		this.spcService = spc;
+<i class="no-highlight">99</i>&nbsp;	}
+<i class="no-highlight">100</i>&nbsp;
+<i class="no-highlight">101</i>&nbsp;	public void setEmailService(EmailService email){
+<i class="no-highlight">102</i>&nbsp;		this.emailService = email;
+<i class="no-highlight">103</i>&nbsp;	}*/
+<i class="no-highlight">104</i>&nbsp;
+<i class="no-highlight">105</i>&nbsp;}
+</div>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+        var codeBlock = document.getElementById('sourceCode');
+
+        if (codeBlock) {
+            hljs.highlightBlock(codeBlock);
+        }
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2021-10-05 03:02</div>
+</div>
+</body>
+</html>
